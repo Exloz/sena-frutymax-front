@@ -1,6 +1,8 @@
 let userConfig = undefined
 
 const nextConfig = {
+  basePath: '/frutymax',
+  trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -9,6 +11,8 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ['exloz.site', 'exloz.site/frutymax'],
+    path: '/frutymax/_next/image/',
   },
   experimental: {
     webpackBuildWorker: true,
