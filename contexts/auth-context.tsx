@@ -15,6 +15,7 @@ interface RegisterData {
   name: string
   email: string
   password: string
+  password_confirmation: string
 }
 
 interface AuthContextType {
@@ -85,14 +86,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await authService.login(credentials)
       
-      if (response.success && response.data) {
-        setUser(response.data.user)
+      if (response.user) {
+        setUser(response.user)
+        if (response.user.role === "admin") {
+          router.push("/admin")
+        } else {
+          router.push("/")
+        }
         return { success: true, message: "Inicio de sesión exitoso" }
       }
       
       return { 
         success: false, 
-        message: response.message || "Error de autenticación" 
+        message: "Error de autenticación" 
       }
     } catch (error: any) {
       await authService.clearAuthData()
@@ -118,14 +124,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await authService.register(data)
       
-      if (response.success && response.data) {
-        setUser(response.data.user)
+      if (response.access_token) {
+        setUser(response.user)
         return { success: true, message: "Registro exitoso" }
       }
       
       return { 
         success: false, 
-        message: response.message || "Error en el registro" 
+        message: "Error en el registro" 
       }
     } catch (error: any) {
       toast({
@@ -147,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authService.logout()
       setUser(null)
-      router.push("/auth/login")
+      router.push("/")
     } catch (error) {
       console.error("Error al cerrar sesión:", error)
       throw error

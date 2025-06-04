@@ -39,22 +39,24 @@ export const authService = {
   },
 
   // Iniciar sesión
-  async login(credentials: LoginDto): Promise<ApiResponse<AuthResponse>> {
-    const response = await api.post<ApiResponse<AuthResponse>>("/auth/login", credentials)
+  async login(credentials: LoginDto): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>("/auth/login", credentials)
+    console.log(response)
+    console.log(response.access_token)
     
-    if (response.success && response.data) {
-      this.storeAuthData(response.data)
+    if (response.access_token) {
+      this.storeAuthData(response)
     }
 
     return response
   },
 
   // Registrarse
-  async register(userData: RegisterDto): Promise<ApiResponse<AuthResponse>> {
-    const response = await api.post<ApiResponse<AuthResponse>>("/auth/register", userData)
+  async register(userData: RegisterDto): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>("/auth/register", userData)
     
-    if (response.success && response.data) {
-      this.storeAuthData(response.data)
+    if (response.access_token) {
+      this.storeAuthData(response)
     }
 
     return response
@@ -64,6 +66,8 @@ export const authService = {
   async logout(): Promise<void> {
     try {
       await api.post("/auth/logout")
+    } catch (error) {
+      console.warn('Error al cerrar sesión en el servidor:', error)
     } finally {
       this.clearAuthData()
     }

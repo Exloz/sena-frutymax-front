@@ -69,12 +69,12 @@ export default function LoginDialog({ children, open, onOpenChange }: LoginDialo
 
   const fillAdminCredentials = () => {
     setEmail("admin@frutymax.com")
-    setPassword("admin123")
+    setPassword("password")
   }
 
   const fillClientCredentials = () => {
-    setEmail("cliente@ejemplo.com")
-    setPassword("cliente123")
+    setEmail("cliente@frutymax.com")
+    setPassword("password")
   }
 
   const dialogContent = (

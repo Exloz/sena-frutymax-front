@@ -1,6 +1,6 @@
 // Configuración base de la API
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.frutymax.exloz.site/api"
+const API_BASE_URL ="https://api.frutymax.exloz.site/api"
 
 export class ApiError extends Error {
   constructor(
@@ -17,20 +17,24 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
   const url = `${API_BASE_URL}${endpoint}`
 
   // Obtener token de autenticación si existe
-  const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null
+  const token = typeof window !== "undefined" ? localStorage.getItem("AUTH_TOKEN_KEY") : null
+  console.log(token)
+
+  // Configurar headers por defecto
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...(token && { "Authorization": `Bearer ${token}` }),
+    ...options.headers
+  }
 
   const config: RequestInit = {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    },
     ...options,
+    headers,
   }
 
   try {
     const response = await fetch(url, config)
-
+    
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new ApiError(errorData.message || `HTTP error! status: ${response.status}`, response.status, errorData)
@@ -85,7 +89,7 @@ export async function uploadFile(file: File, endpoint: string): Promise<{ url: s
   const formData = new FormData()
   formData.append("file", file)
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null
+  const token = typeof window !== "undefined" ? localStorage.getItem("AUTH_TOKEN_KEY") : null
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: "POST",

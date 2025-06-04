@@ -68,7 +68,7 @@ export default function RegisterDialog({ children, open, onOpenChange }: Registe
       return
     }
 
-    const result = await register({ name, email, password })
+    const result = await register({ name, email, password, password_confirmation: confirmPassword })
 
     if (result.success) {
       toast({
