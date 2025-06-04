@@ -1,6 +1,7 @@
 // Configuración base de la API
+import { AUTH_TOKEN_KEY } from "./auth-service"
 
-const API_BASE_URL ="https://api.frutymax.exloz.site/api"
+const API_BASE_URL = "https://api.frutymax.exloz.site/api"
 
 export class ApiError extends Error {
   constructor(
@@ -17,7 +18,7 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
   const url = `${API_BASE_URL}${endpoint}`
 
   // Obtener token de autenticación si existe
-  const token = typeof window !== "undefined" ? localStorage.getItem("AUTH_TOKEN_KEY") : null
+  const token = typeof window !== "undefined" ? localStorage.getItem(AUTH_TOKEN_KEY) : null
   console.log(token)
 
   // Configurar headers por defecto
@@ -30,11 +31,22 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
   const config: RequestInit = {
     ...options,
     headers,
+    credentials: 'include' as const, // Incluir credenciales en la petición
+    mode: 'cors' as const, // Especificar modo CORS
   }
 
   try {
     const response = await fetch(url, config)
     
+    if (response.status === 401) {
+      // Limpiar datos de autenticación si el token es inválido
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(AUTH_TOKEN_KEY)
+        window.location.href = '/' // Redirigir al inicio
+      }
+      throw new ApiError('Sesión expirada o inválida', 401, {})
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new ApiError(errorData.message || `HTTP error! status: ${response.status}`, response.status, errorData)
@@ -45,7 +57,7 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
     if (error instanceof ApiError) {
       throw error
     }
-    throw new ApiError("Network error", 0, error)
+    throw new ApiError("Error de red. Por favor verifica tu conexión.", 0, error)
   }
 }
 

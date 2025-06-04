@@ -7,7 +7,7 @@ export interface AuthResponse {
   token_type: string
 }
 
-const AUTH_TOKEN_KEY = 'authToken'
+export const AUTH_TOKEN_KEY = 'authToken'
 const USER_KEY = 'user'
 
 export const authService = {

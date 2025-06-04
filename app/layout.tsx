@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={poppins.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" disableTransitionOnChange>
           <AuthProvider>
             <CartProvider>
               {children}

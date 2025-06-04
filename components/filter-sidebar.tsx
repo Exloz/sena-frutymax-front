@@ -10,7 +10,6 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetFooter,
-  SheetClose,
 } from "@/components/ui/sheet"
 
 interface Category {
@@ -27,6 +26,8 @@ interface PriceRange {
 }
 
 interface FilterSidebarProps {
+  isOpen: boolean
+  onClose: () => void
   categories: Category[]
   priceRanges: PriceRange[]
   selectedCategories: string[]
@@ -37,6 +38,8 @@ interface FilterSidebarProps {
 }
 
 export default function FilterSidebar({
+  isOpen,
+  onClose,
   categories,
   priceRanges,
   selectedCategories,
@@ -116,7 +119,7 @@ export default function FilterSidebar({
     <>
       {/* Filtros en móvil - Sheet */}
       <div className="md:hidden">
-        <Sheet>
+        <Sheet open={isOpen} onOpenChange={onClose}>
           <SheetTrigger asChild>
             <Button variant="outline" className="w-full flex items-center gap-2">
               <Filter className="h-4 w-4" />
@@ -145,11 +148,12 @@ export default function FilterSidebar({
             </div>
 
             <SheetFooter className="mt-6">
-              <SheetClose asChild>
-                <Button className="w-full bg-green-600 hover:bg-green-700">
-                  Ver {hasActiveFilters ? "resultados filtrados" : "todos los productos"}
-                </Button>
-              </SheetClose>
+              <Button 
+                onClick={onClose} 
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                Ver {hasActiveFilters ? "resultados filtrados" : "todos los productos"}
+              </Button>
             </SheetFooter>
           </SheetContent>
         </Sheet>
