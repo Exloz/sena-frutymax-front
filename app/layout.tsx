@@ -4,6 +4,7 @@ import { Poppins } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { CartProvider } from "@/contexts/cart-context"
+import { AuthProvider } from "@/contexts/auth-context"
 import { Toaster } from "@/components/ui/toaster"
 
 const poppins = Poppins({
@@ -14,7 +15,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "FrutyMax - Frutas y Verduras Frescas",
-  description: "Tienda online de frutas y verduras frescas"
+  description: "Tienda online de frutas y verduras frescas",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -26,16 +28,14 @@ export default function RootLayout({
     <html lang="es">
       <body className={poppins.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <CartProvider>
-            {children}
-            <Toaster />
-          </CartProvider>
+          <AuthProvider>
+            <CartProvider>
+              {children}
+              <Toaster />
+            </CartProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
   )
 }
-
-
-
-import './globals.css'

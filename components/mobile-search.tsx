@@ -68,4 +68,3 @@ export default function MobileSearch({ onSearch, onClose }: MobileSearchProps) {
     </div>
   )
 }
-

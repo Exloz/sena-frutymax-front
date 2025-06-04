@@ -2,12 +2,16 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Search, User, Menu } from "lucide-react"
+import { Search, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import CartDrawer from "@/components/cart-drawer"
 import SearchBar from "@/components/search-bar"
 import MobileSearch from "@/components/mobile-search"
+import LoginDialog from "@/components/auth/login-dialog"
+import RegisterDialog from "@/components/auth/register-dialog"
+import UserMenu from "@/components/auth/user-menu"
+import { useAuth } from "@/contexts/auth-context"
 
 interface HeaderProps {
   onSearch?: (term: string) => void
@@ -15,6 +19,7 @@ interface HeaderProps {
 
 export default function Header({ onSearch }: HeaderProps) {
   const [mobileSearchVisible, setMobileSearchVisible] = useState(false)
+  const { user } = useAuth()
 
   const toggleMobileSearch = () => {
     setMobileSearchVisible(!mobileSearchVisible)
@@ -84,18 +89,43 @@ export default function Header({ onSearch }: HeaderProps) {
             <span className="sr-only">Buscar</span>
           </Button>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="hidden md:flex bg-white text-green-600 hover:bg-gray-100">
-              Iniciar sesión
-            </Button>
-            <Button variant="outline" size="sm" className="hidden md:flex bg-white text-green-600 hover:bg-gray-100">
-              Registrarse
-            </Button>
-            <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-green-600">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Cuenta</span>
-            </Button>
-          </div>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2">
+                <span className="text-sm">Hola, {user.name.split(" ")[0]}</span>
+              </div>
+              <UserMenu />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <LoginDialog>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:flex bg-white text-green-600 hover:bg-gray-100"
+                >
+                  Iniciar sesión
+                </Button>
+              </LoginDialog>
+              <RegisterDialog>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:flex bg-white text-green-600 hover:bg-gray-100"
+                >
+                  Registrarse
+                </Button>
+              </RegisterDialog>
+              <div className="md:hidden">
+                <LoginDialog>
+                  <Button variant="ghost" size="icon" className="text-white hover:bg-green-600">
+                    <Search className="h-5 w-5" />
+                    <span className="sr-only">Cuenta</span>
+                  </Button>
+                </LoginDialog>
+              </div>
+            </div>
+          )}
 
           <CartDrawer />
         </div>
@@ -106,4 +136,3 @@ export default function Header({ onSearch }: HeaderProps) {
     </header>
   )
 }
-

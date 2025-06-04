@@ -31,4 +31,3 @@ export default function CategoryCard({ title, image, color, onClick }: CategoryC
     </div>
   )
 }
-

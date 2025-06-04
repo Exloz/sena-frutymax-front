@@ -115,4 +115,3 @@ export function useCart() {
   }
   return context
 }
-

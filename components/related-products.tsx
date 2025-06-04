@@ -46,4 +46,3 @@ export default function RelatedProducts({ products }: { products: Product[] }) {
     </div>
   )
 }
-

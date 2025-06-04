@@ -62,4 +62,3 @@ export default function ProductQuantity({ product }: { product: Product }) {
     </div>
   )
 }
-
