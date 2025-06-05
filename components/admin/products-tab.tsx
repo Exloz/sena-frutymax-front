@@ -18,6 +18,7 @@ import Image from "next/image"
 export default function ProductsTab() {
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
@@ -26,17 +27,50 @@ export default function ProductsTab() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    hasMore: true
+  })
   const { toast } = useToast()
 
-  const loadProducts = async () => {
+  const loadProducts = async (page = 1, isLoadMore = false) => {
     try {
-      setIsLoading(true)
+      if (isLoadMore) {
+        setIsLoadingMore(true)
+      } else {
+        setIsLoading(true)
+        setPagination(prev => ({ ...prev, page }))
+      }
+      
       const response = await productService.getProducts({
+        page,
+        limit: 10,
         search: searchTerm || undefined,
         category: categoryFilter || undefined,
         status: statusFilter || undefined,
       })
-      setProducts(response.data)
+      
+      if (response?.success) {
+        const newProducts = Array.isArray(response.data) ? response.data : []
+        
+        if (isLoadMore) {
+          setProducts(prev => [...prev, ...newProducts])
+        } else {
+          setProducts(newProducts)
+        }
+        
+        // Actualizar estado de paginación
+        const { pagination: apiPagination } = response
+        setPagination(prev => ({
+          ...prev,
+          page: apiPagination?.current_page || page,
+          limit: apiPagination?.per_page || 10,
+          total: apiPagination?.total || 0,
+          hasMore: apiPagination?.current_page < apiPagination?.last_page
+        }))
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -45,11 +79,17 @@ export default function ProductsTab() {
       })
     } finally {
       setIsLoading(false)
+      setIsLoadingMore(false)
     }
   }
 
   useEffect(() => {
     loadProducts()
+  }, [searchTerm, categoryFilter, statusFilter])
+
+  useEffect(() => {
+    // Resetear a la primera página cuando cambian los filtros
+    loadProducts(1, false)
   }, [searchTerm, categoryFilter, statusFilter])
 
   const handleCreateProduct = () => {
@@ -187,59 +227,71 @@ export default function ProductsTab() {
           ) : products.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">No se encontraron productos</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Imagen</TableHead>
-                  <TableHead>Producto</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>Precio</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Proveedor</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div className="relative h-12 w-12 rounded-md overflow-hidden">
-                        <Image
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{product.name}</p>
-                        <p className="text-sm text-muted-foreground">{product.unit}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="capitalize">{product.category}</TableCell>
-                    <TableCell>{formatPrice(product.price)}</TableCell>
-                    <TableCell>
-                      <span className={product.stock <= 10 ? "text-red-600 font-medium" : ""}>{product.stock}</span>
-                    </TableCell>
-                    <TableCell>{product.supplier?.name || "N/A"}</TableCell>
-                    <TableCell>{getStatusBadge(product.status)}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="icon" onClick={() => handleEditProduct(product)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="icon" onClick={() => handleDeleteProduct(product)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Imagen</TableHead>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Categoría</TableHead>
+                    <TableHead>Precio</TableHead>
+                    <TableHead>Stock</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {products.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell>
+                        <div className="relative h-12 w-12 rounded-md overflow-hidden">
+                          <Image
+                            src={product.image || "/placeholder.svg"}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          <p className="text-sm text-muted-foreground">{product.unit}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="capitalize">{product.category}</TableCell>
+                      <TableCell>{formatPrice(product.price)}</TableCell>
+                      <TableCell>
+                        <span className={product.stock <= 10 ? "text-red-600 font-medium" : ""}>{product.stock}</span>
+                      </TableCell>
+                      <TableCell>{product.supplier?.name || "N/A"}</TableCell>
+                      <TableCell>{getStatusBadge(product.status)}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="icon" onClick={() => handleEditProduct(product)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="icon" onClick={() => handleDeleteProduct(product)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {pagination.hasMore && (
+                <div className="flex justify-center py-4">
+                  <Button onClick={() => loadProducts(pagination.page + 1, true)} disabled={isLoadingMore}>
+                    {isLoadingMore ? (
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                    ) : (
+                      "Cargar más"
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>

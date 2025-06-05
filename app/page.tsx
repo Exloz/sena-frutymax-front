@@ -35,19 +35,9 @@ const categories: Category[] = [
 // Rangos de precios para filtros
 const priceRanges = [
   { id: "price-1", label: "Menos de $1.000", min: 0, max: 1000 },
-  { id: "price-2", label: "$1.000 - $2.000", min: 1000, max: 2000 },
-  { id: "price-3", label: "$2.000 - $3.000", min: 2000, max: 3000 },
-  { id: "price-4", label: "Más de $3.000", min: 3000, max: Number.POSITIVE_INFINITY },
 ]
 
-// Opciones de ordenación
-const sortOptions = [
-  { label: "Relevancia", value: "relevance" },
-  { label: "Precio: menor a mayor", value: "price-asc" },
-  { label: "Precio: mayor a menor", value: "price-desc" },
-  { label: "Nombre: A-Z", value: "name-asc" },
-  { label: "Nombre: Z-A", value: "name-desc" },
-]
+// Opciones de ordenación eliminadas ya que no se están utilizando actualmente
 
 function HomeContent() {
   const [products, setProducts] = useState<Product[]>([])
@@ -78,7 +68,7 @@ function HomeContent() {
       
       const response = await productService.getProducts({
         page,
-        limit: pagination.limit,
+        limit: 10, // Usamos un valor fijo de 10 que coincide con el per_page de la API
         ...(searchTerm && { search: searchTerm }),
         ...(selectedCategories.length > 0 && { category: selectedCategories.join(',') })
       })
@@ -94,11 +84,20 @@ function HomeContent() {
           setFilteredProducts(newProducts)
         }
         
+        // Actualizamos el estado de paginación con la respuesta de la API
+        const apiPagination = response.pagination as {
+          total: number
+          per_page: number
+          current_page: number
+          last_page: number
+        }
+        
         setPagination(prev => ({
           ...prev,
-          page,
-          total: response.pagination?.total || 0,
-          hasMore: page < (response.pagination?.totalPages || 1)
+          page: apiPagination?.current_page || page,
+          limit: apiPagination?.per_page || 10,
+          total: apiPagination?.total || 0,
+          hasMore: apiPagination?.current_page < apiPagination?.last_page
         }))
       }
     } catch (err) {
@@ -167,12 +166,6 @@ function HomeContent() {
     setPagination(prev => ({ ...prev, page: 1 }))
   }
 
-  // Manejadores de eventos para filtros
-
-  const handleSortChange = (value: string) => {
-    setSortBy(value)
-  }
-
   const resetFilters = () => {
     setSearchTerm("")
     setSelectedCategories([])
@@ -205,7 +198,6 @@ function HomeContent() {
       <main className="container mx-auto px-4 py-8">
         <Banner />
         <div className="flex flex-col md:flex-row gap-6">
-
           {/* Filtros */}
           <FilterSidebar
             isOpen={isFilterOpen}
@@ -234,7 +226,14 @@ function HomeContent() {
           {/* Contenido principal */}
           <div className="flex-1">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold text-gray-900">Productos</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Productos
+                {pagination.total > 0 && (
+                  <span className="text-sm font-normal text-gray-500 ml-2">
+                    (Mostrando {filteredProducts.length} de {pagination.total} productos)
+                  </span>
+                )}
+              </h1>
               <div className="flex items-center space-x-4">
                 <SearchBar onSearch={handleSearch} />
                 <Button 
@@ -264,12 +263,38 @@ function HomeContent() {
                         setSelectedCategories(prev => [...prev, category.id])
                       }
                     }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Resultados de búsqueda */}
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin" />
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No se encontraron productos con los filtros seleccionados.</p>
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={resetFilters}
+                >
+                  Limpiar filtros
+                </Button>
               </div>
             ) : (
-              <>
+              <div className="space-y-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredProducts.map((product) => (
-                    <ProductCard key={`${product.id}-${product.updatedAt}`} product={product} />
+                    <ProductCard 
+                      key={`${product.id}-${product.updatedAt}`} 
+                      product={{
+                        ...product,
+                        image: product.image || '/placeholder.svg'
+                      }} 
+                    />
                   ))}
                 </div>
                 
@@ -279,27 +304,20 @@ function HomeContent() {
                       onClick={loadMoreProducts}
                       disabled={isLoadingMore}
                       className="mx-auto"
-                            image: product.image || '/placeholder.svg',
-                            category: product.category
-                          }}
-                        />
-                      ) : null
-                    ))
-                  ) : (
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-gray-500">No se encontraron productos con los filtros seleccionados.</p>
-                    <Button 
-                      variant="outline" 
-                      className="mt-4"
-                      onClick={resetFilters}
                     >
-                      Limpiar filtros
+                      {isLoadingMore ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Cargando...
+                        </>
+                      ) : (
+                        'Cargar más productos'
+                      )}
                     </Button>
                   </div>
                 )}
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
