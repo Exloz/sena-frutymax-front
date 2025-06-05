@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Search, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -41,35 +42,18 @@ export default function Header({ onSearch }: HeaderProps) {
                 <Link href="/" className="text-lg font-medium">
                   Inicio
                 </Link>
-                <Link href="/" className="text-lg font-medium">
-                  Frutas
-                </Link>
-                <Link href="/" className="text-lg font-medium">
-                  Verduras
-                </Link>
-                <Link href="/" className="text-lg font-medium">
-                  Pulpas
-                </Link>
               </nav>
             </SheetContent>
           </Sheet>
 
           <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.png" alt="Logo" width={50} height={50} />
             <span className="text-xl font-bold">FrutyMax</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/" className="text-sm font-medium hover:underline">
               Inicio
-            </Link>
-            <Link href="/" className="text-sm font-medium hover:underline">
-              Frutas
-            </Link>
-            <Link href="/" className="text-sm font-medium hover:underline">
-              Verduras
-            </Link>
-            <Link href="/" className="text-sm font-medium hover:underline">
-              Pulpas
             </Link>
           </nav>
         </div>

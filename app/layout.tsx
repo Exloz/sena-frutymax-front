@@ -16,7 +16,6 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "FrutyMax - Frutas y Verduras Frescas",
   description: "Tienda online de frutas y verduras frescas",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
