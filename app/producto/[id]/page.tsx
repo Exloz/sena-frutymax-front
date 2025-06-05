@@ -56,11 +56,11 @@ export default async function ProductPage({ params }: { params: { id: string } }
   console.log(product)
   const relatedProducts = await getRelatedProducts(product.category, product.id)
   
-  // Ensure product has required properties for the UI
   const productWithDefaults = {
     ...product,
-    imageUrl: product.imageUrl || "https://placehold.co/800?text=FrutyMax&font=roboto",
+    imageUrl: product.image || "https://placehold.co/800?text=FrutyMax&font=roboto",
   }
+
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-CO", {

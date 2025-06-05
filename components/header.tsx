@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Search, Menu } from "lucide-react"
@@ -13,6 +13,7 @@ import LoginDialog from "@/components/auth/login-dialog"
 import RegisterDialog from "@/components/auth/register-dialog"
 import UserMenu from "@/components/auth/user-menu"
 import { useAuth } from "@/contexts/auth-context"
+import { useRouter, useSearchParams } from "next/navigation"
 
 interface HeaderProps {
   onSearch?: (term: string) => void
@@ -20,7 +21,33 @@ interface HeaderProps {
 
 export default function Header({ onSearch }: HeaderProps) {
   const [mobileSearchVisible, setMobileSearchVisible] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { user } = useAuth()
+
+  // Sync search term with URL
+  useEffect(() => {
+    const search = searchParams.get('search')
+    if (search !== null) {
+      setSearchTerm(search)
+    }
+  }, [searchParams])
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term)
+    // Update URL with search query
+    const params = new URLSearchParams(searchParams.toString())
+    if (term) {
+      params.set('search', term)
+    } else {
+      params.delete('search')
+    }
+    router.push(`/?${params.toString()}`)
+    
+    // Call the onSearch prop if provided
+    onSearch?.(term)
+  }
 
   const toggleMobileSearch = () => {
     setMobileSearchVisible(!mobileSearchVisible)
@@ -58,9 +85,15 @@ export default function Header({ onSearch }: HeaderProps) {
           </nav>
         </div>
 
-        <div className="hidden md:flex items-center relative w-full max-w-sm mx-4">
-          <SearchBar onSearch={onSearch} placeholder="Buscar productos..." className="bg-white text-black" />
-        </div>
+        {/* <div className="hidden md:flex items-center relative w-full max-w-sm mx-4">
+          <SearchBar 
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onSearch={handleSearch}
+            placeholder="Buscar productos..." 
+            className="bg-white text-black" 
+          />
+        </div> */}
 
         <div className="flex items-center gap-4">
           <Button
