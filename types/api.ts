@@ -25,7 +25,7 @@ export interface Product {
   description: string
   price: number
   unit: string
-  image?: string
+  imageUrl?: string
   category: string
   stock: number
   status: "active" | "inactive" | "out_of_stock"
@@ -46,15 +46,17 @@ export interface Product {
 export interface Supplier {
   id: number
   name: string
+  contact_person: string
   email: string
   phone: string
   address: string
-  city: string
-  country: string
-  contactPerson: string
-  status: "active" | "inactive"
-  createdAt: string
-  updatedAt: string
+  tax_id: string
+  payment_terms: number
+  notes: string | null
+  status: boolean
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
 }
 
 export interface User {
@@ -101,6 +103,7 @@ export interface CreateProductDto {
   category: string
   stock: number
   supplier_id: number
+  imageUrl?: string 
   nutritionalInfo?: {
     calories: number
     protein: string
@@ -122,7 +125,8 @@ export interface CreateSupplierDto {
   address: string
   city: string
   country: string
-  contactPerson: string
+  tax_id: string
+  contact_person: string
 }
 
 export interface UpdateSupplierDto extends Partial<CreateSupplierDto> {

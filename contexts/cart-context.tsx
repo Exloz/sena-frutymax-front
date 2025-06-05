@@ -7,7 +7,7 @@ export interface CartProduct {
   name: string
   price: number
   unit: string
-  image: string
+  imageUrl: string
   category: string
   quantity: number
 }

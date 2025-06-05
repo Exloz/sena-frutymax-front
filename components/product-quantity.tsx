@@ -3,19 +3,15 @@
 import { useState } from "react"
 import { ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useCart } from "@/contexts/cart-context"
+import { useCart, type CartProduct } from "@/contexts/cart-context"
 import { useToast } from "@/hooks/use-toast"
+import { Product } from "@/types/api"
 
-interface Product {
-  id: number
-  name: string
-  price: number
-  unit: string
-  image: string
-  category: string
+interface ProductQuantityProps {
+  product: Product
 }
 
-export default function ProductQuantity({ product }: { product: Product }) {
+export default function ProductQuantity({ product }: ProductQuantityProps) {
   const [quantity, setQuantity] = useState(1)
   const { addToCart } = useCart()
   const { toast } = useToast()
@@ -31,10 +27,17 @@ export default function ProductQuantity({ product }: { product: Product }) {
   }
 
   const handleAddToCart = () => {
-    addToCart({
-      ...product,
+    const cartProduct: CartProduct = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      unit: product.unit,
+      imageUrl: product.imageUrl || "/placeholder.svg",
+      category: product.category,
       quantity,
-    })
+    }
+
+    addToCart(cartProduct)
 
     toast({
       title: "Producto añadido",

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 
 export default function Banner() {
   return (
-    <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-lime-500 text-white p-6 md:p-8 my-1">
+    <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-lime-500 text-white p-6 md:p-8 my-1 mb-8">
       <div className="relative z-10">
         <h1 className="text-2xl md:text-3xl font-bold mb-2">Frutas y verduras frescas</h1>
         <p className="text-sm md:text-base mb-4 max-w-2xl">
@@ -15,7 +15,6 @@ export default function Banner() {
             <span className="text-amber-300">locales</span>.
           </div>
           <p className="text-sm md:text-base mb-4">Comprándolas apoyas a miles de familias agricultoras.</p>
-          <Button className="bg-amber-500 hover:bg-amber-600 text-white">¡Conoce más!</Button>
         </div>
       </div>
       <div className="absolute right-0 bottom-0 opacity-20">{/* Decorative fruit images would go here */}</div>

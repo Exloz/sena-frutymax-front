@@ -2,14 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 
-interface Product {
-  id: number
-  name: string
-  price: number
-  unit: string
-  image: string
-  category: string
-}
+import { Product } from "@/types/api"
 
 export default function RelatedProducts({ products }: { products: Product[] }) {
   const formatPrice = (price: number) => {
@@ -29,7 +22,7 @@ export default function RelatedProducts({ products }: { products: Product[] }) {
               {product.category === "frutas" ? "Fruta" : "Verdura"}
             </Badge>
             <Image
-              src={product.image || "/placeholder.svg"}
+              src={product.imageUrl || "/placeholder.svg"}
               alt={product.name}
               fill
               className="object-cover transition-transform group-hover:scale-105"

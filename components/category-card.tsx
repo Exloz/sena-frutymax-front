@@ -1,25 +1,17 @@
 "use client"
 
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 
 interface CategoryCardProps {
   title: string
-  image: string
   color: string
   onClick?: () => void
 }
 
-export default function CategoryCard({ title, image, color, onClick }: CategoryCardProps) {
+export default function CategoryCard({ title, color, onClick }: CategoryCardProps) {
   return (
     <div className={`relative overflow-hidden rounded-lg ${color} text-white`}>
-      <div className="relative h-48 w-full overflow-hidden">
-        <Image
-          src={image || "/placeholder.svg"}
-          alt={title}
-          fill
-          className="object-cover transition-transform duration-300 hover:scale-105"
-        />
+      <div className="relative h-36 w-full overflow-hidden">
         <div className="absolute inset-0 bg-black/20" />
       </div>
       <div className="absolute bottom-0 left-0 right-0 p-4">

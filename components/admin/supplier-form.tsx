@@ -36,10 +36,12 @@ export default function SupplierForm({ supplier, onSuccess, onCancel }: Supplier
           address: supplier.address,
           city: supplier.city,
           country: supplier.country,
-          contactPerson: supplier.contactPerson,
+          contact_person: supplier.contact_person,
+          tax_id: supplier.tax_id,
         }
       : {
           country: "Colombia",
+          tax_id: "",
         },
   })
 
@@ -121,13 +123,23 @@ export default function SupplierForm({ supplier, onSuccess, onCancel }: Supplier
             </div>
 
             <div>
-              <Label htmlFor="contactPerson">Persona de contacto *</Label>
+              <Label htmlFor="contact_person">Persona de contacto *</Label>
               <Input
-                id="contactPerson"
-                {...register("contactPerson", { required: "La persona de contacto es requerida" })}
+                id="contact_person"
+                {...register("contact_person", { required: "La persona de contacto es requerida" })}
                 placeholder="Nombre del representante"
               />
-              {errors.contactPerson && <p className="text-sm text-red-500">{errors.contactPerson.message}</p>}
+              {errors.contact_person && <p className="text-sm text-red-500">{errors.contact_person.message}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="tax_id">NIT *</Label>
+              <Input
+                id="tax_id"
+                {...register("tax_id", { required: "El NIT es requerido" })}
+                placeholder="123456789"
+              />
+              {errors.tax_id && <p className="text-sm text-red-500">{errors.tax_id.message}</p>}
             </div>
           </CardContent>
         </Card>

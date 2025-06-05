@@ -31,12 +31,14 @@ export const productService = {
 
   // Crear nuevo producto
   async createProduct(data: CreateProductDto): Promise<ApiResponse<Product>> {
-    return api.post<ApiResponse<Product>>("/products", data)
+    // Siempre enviar como JSON
+    return api.post<ApiResponse<Product>>("/products", data);
   },
 
   // Actualizar producto
   async updateProduct(id: number, data: UpdateProductDto): Promise<ApiResponse<Product>> {
-    return api.put<ApiResponse<Product>>(`/products/${id}`, data)
+    // Siempre enviar como JSON
+    return api.put<ApiResponse<Product>>(`/products/${id}`, data);
   },
 
   // Eliminar producto
@@ -44,9 +46,17 @@ export const productService = {
     return api.delete<ApiResponse<void>>(`/products/${id}`)
   },
 
-  // Subir imagen de producto
   async uploadProductImage(productId: number, file: File): Promise<ApiResponse<{ imageUrl: string }>> {
-    return uploadFile(file, `/products/${productId}/image`)
+    const response = await uploadFile(file, `/products/${productId}/image`);
+    if (response && response.url) {
+      return {
+        success: true,
+        data: {
+          imageUrl: response.url
+        }
+      };
+    }
+    throw new Error('Error al cargar la imagen');
   },
 
   // Obtener categorías disponibles

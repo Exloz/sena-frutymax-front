@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, Search, Filter, MapPin, Phone, Mail } from "lucide-react"
+import { Plus, Edit, Trash2, Search, Filter, Phone, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,6 +17,7 @@ import type { Supplier } from "@/types/api"
 export default function SuppliersTab() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>()
@@ -24,29 +25,73 @@ export default function SuppliersTab() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    hasMore: true
+  })
   const { toast } = useToast()
 
-  const loadSuppliers = async () => {
+  const loadSuppliers = async (page = 1, isLoadMore = false) => {
     try {
-      setIsLoading(true)
+      if (isLoadMore) {
+        setIsLoadingMore(true)
+      } else {
+        setIsLoading(true)
+        setPagination(prev => ({ ...prev, page }))
+      }
+      
       const response = await supplierService.getSuppliers({
+        page,
+        limit: 10,
         search: searchTerm || undefined,
         status: statusFilter || undefined,
       })
-      setSuppliers(response.data)
+      
+      if (response?.success) {
+        const newSuppliers = Array.isArray(response.data) ? response.data : []
+        
+        if (isLoadMore) {
+          setSuppliers(prev => [...prev, ...newSuppliers])
+        } else {
+          setSuppliers(newSuppliers)
+        }
+        
+        // Actualizar estado de paginación
+        const { pagination: apiPagination } = response
+        setPagination(prev => ({
+          ...prev,
+          page: apiPagination?.current_page || page,
+          limit: apiPagination?.per_page || 10,
+          total: apiPagination?.total || 0,
+          hasMore: apiPagination?.current_page < apiPagination?.last_page
+        }))
+      }
     } catch (error: any) {
+      console.error("Error al cargar proveedores:", error)
       toast({
         title: "Error",
-        description: "No se pudieron cargar los proveedores",
+        description: error.message || "No se pudieron cargar los proveedores",
         variant: "destructive",
       })
     } finally {
       setIsLoading(false)
+      setIsLoadingMore(false)
     }
+  }
+
+  const handleLoadMore = () => {
+    loadSuppliers(pagination.page + 1, true)
   }
 
   useEffect(() => {
     loadSuppliers()
+  }, [searchTerm, statusFilter])
+  
+  useEffect(() => {
+    // Resetear a la primera página cuando cambian los filtros
+    loadSuppliers(1, false)
   }, [searchTerm, statusFilter])
 
   const handleCreateSupplier = () => {
@@ -88,12 +133,12 @@ export default function SuppliersTab() {
     }
   }
 
-  const toggleSupplierStatus = async (supplier: Supplier) => {
+  const handleToggleStatus = async (supplier: Supplier) => {
     try {
       await supplierService.toggleSupplierStatus(supplier.id)
       toast({
         title: "Éxito",
-        description: `Proveedor ${supplier.status === "active" ? "desactivado" : "activado"} correctamente`,
+        description: `Proveedor ${supplier.status ? "desactivado" : "activado"} correctamente`,
       })
       loadSuppliers()
     } catch (error: any) {
@@ -103,20 +148,6 @@ export default function SuppliersTab() {
         variant: "destructive",
       })
     }
-  }
-
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      active: "default",
-      inactive: "secondary",
-    }
-
-    const labels: Record<string, string> = {
-      active: "Activo",
-      inactive: "Inactivo",
-    }
-
-    return <Badge variant={variants[status] || "outline"}>{labels[status] || status}</Badge>
   }
 
   return (
@@ -182,46 +213,63 @@ export default function SuppliersTab() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Empresa</TableHead>
-                  <TableHead>Contacto</TableHead>
-                  <TableHead>Ubicación</TableHead>
+                  <TableHead>Persona de Contacto</TableHead>
+                  <TableHead>Información de Contacto</TableHead>
+                  <TableHead>Dirección</TableHead>
+                  <TableHead>RIF/NIT</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Fecha de registro</TableHead>
+                  <TableHead>Fecha de Registro</TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {suppliers.map((supplier) => (
                   <TableRow key={supplier.id}>
+                    <TableCell className="font-medium">{supplier.name}</TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{supplier.name}</p>
-                        <div className="flex items-center text-sm text-muted-foreground mt-1">
-                          <Mail className="h-3 w-3 mr-1" />
-                          {supplier.email}
+                        <p className="font-medium">{supplier.contact_person || 'No especificado'}</p>
+                        {supplier.payment_terms && (
+                          <div className="text-sm text-muted-foreground">
+                            Términos: {supplier.payment_terms} días
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center text-sm">
+                          <Mail className="h-3 w-3 mr-1 text-muted-foreground" />
+                          {supplier.email || 'No especificado'}
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <Phone className="h-3 w-3 mr-1 text-muted-foreground" />
+                          {supplier.phone || 'No especificado'}
                         </div>
                       </div>
                     </TableCell>
+                    <TableCell>{supplier.address || 'No especificado'}</TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{supplier.contactPerson}</p>
-                        <div className="flex items-center text-sm text-muted-foreground mt-1">
-                          <Phone className="h-3 w-3 mr-1" />
-                          {supplier.phone}
-                        </div>
+                        <div>{supplier.tax_id || 'No especificado'}</div>
+                        {supplier.notes && (
+                          <div className="text-sm text-muted-foreground truncate max-w-[150px]">
+                            {supplier.notes}
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center text-sm">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        {supplier.city}, {supplier.country}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <button onClick={() => toggleSupplierStatus(supplier)} className="cursor-pointer">
-                        {getStatusBadge(supplier.status)}
+                      <button 
+                        onClick={() => handleToggleStatus(supplier)}
+                        className="cursor-pointer"
+                      >
+                        <Badge variant={supplier.status ? 'default' : 'destructive'}>
+                          {supplier.status ? 'Activo' : 'Inactivo'}
+                        </Badge>
                       </button>
                     </TableCell>
-                    <TableCell>{new Date(supplier.createdAt).toLocaleDateString("es-CO")}</TableCell>
+                    <TableCell>{new Date(supplier.created_at).toLocaleDateString('es-CO')}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button variant="outline" size="icon" onClick={() => handleEditSupplier(supplier)}>
@@ -234,12 +282,25 @@ export default function SuppliersTab() {
                     </TableCell>
                   </TableRow>
                 ))}
+                {pagination.hasMore && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center">
+                      <Button
+                        variant="outline"
+                        onClick={handleLoadMore}
+                        disabled={isLoadingMore}
+                        className="mt-4"
+                      >
+                        {isLoadingMore ? 'Cargando...' : 'Cargar más'}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           )}
         </CardContent>
       </Card>
-
       {/* Diálogos */}
       <SupplierDialog
         open={supplierDialogOpen}

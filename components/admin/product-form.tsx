@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { Loader2, Upload, X } from "lucide-react"
+import { Loader2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { productService } from "@/services/product-service"
 import { supplierService } from "@/services/supplier-service"
-import type { Product, CreateProductDto, UpdateProductDto, Supplier } from "@/types/api"
+import type { Product, CreateProductDto, Supplier } from "@/types/api"
 import Image from "next/image"
 
 interface ProductFormProps {
@@ -26,8 +26,7 @@ interface ProductFormProps {
 export default function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(product?.image || null)
+  const [imageUrl, setImageUrl] = useState<string>(product?.imageUrl || '')
   const { toast } = useToast()
 
   const {
@@ -69,51 +68,47 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
     loadSuppliers()
   }, [toast])
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImageFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
+  // Manejar cambio en la URL de la imagen
+  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value
+    setImageUrl(url)
   }
 
-  const removeImage = () => {
-    setImageFile(null)
-    setImagePreview(null)
+  // Limpiar la URL de la imagen
+  const handleClearImage = () => {
+    setImageUrl('')
   }
 
+  // Enviar el formulario
   const onSubmit = async (data: CreateProductDto) => {
     setIsLoading(true)
     try {
-      let response
+      const productData = {
+        ...data,
+        imageUrl: imageUrl || undefined
+      }
 
       if (product) {
         // Actualizar producto existente
-        response = await productService.updateProduct(product.id, data as UpdateProductDto)
+        await productService.updateProduct(product.id, productData)
+        toast({
+          title: "Producto actualizado",
+          description: "El producto se ha actualizado correctamente.",
+        })
       } else {
         // Crear nuevo producto
-        response = await productService.createProduct(data)
+        await productService.createProduct(productData)
+        toast({
+          title: "Producto creado",
+          description: "El producto se ha creado correctamente.",
+        })
       }
-
-      // Subir imagen si se seleccionó una
-      if (imageFile && response.data) {
-        await productService.uploadProductImage(response.data.id, imageFile)
-      }
-
-      toast({
-        title: "Éxito",
-        description: product ? "Producto actualizado correctamente" : "Producto creado correctamente",
-      })
-
       onSuccess()
-    } catch (error: any) {
+    } catch (error) {
+      console.error("Error al guardar el producto:", error)
       toast({
         title: "Error",
-        description: error.message || "Ocurrió un error inesperado",
+        description: "Ocurrió un error al guardar el producto. Por favor, inténtalo de nuevo.",
         variant: "destructive",
       })
     } finally {
@@ -253,38 +248,52 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {imagePreview ? (
-                  <div className="relative">
-                    <Image
-                      src={imagePreview || "/placeholder.svg"}
-                      alt="Preview"
-                      width={200}
-                      height={200}
-                      className="rounded-lg object-cover"
+                {/* Campo de URL de la imagen */}
+                <div className="space-y-2">
+                  <Label htmlFor="imageUrl">URL de la imagen</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="imageUrl"
+                      type="url"
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                      value={imageUrl}
+                      onChange={handleImageUrlChange}
+                      className="flex-1"
                     />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={removeImage}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    {imageUrl && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={handleClearImage}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
-                ) : (
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">Selecciona una imagen</p>
+                  <p className="text-xs text-muted-foreground">
+                    Ingresa la URL completa de la imagen (ej: https://ejemplo.com/imagen.jpg)
+                  </p>
+                </div>
+
+                {/* Vista previa de la imagen */}
+                {imageUrl && (
+                  <div className="space-y-2">
+                    <Label>Vista previa</Label>
+                    <div className="relative h-48 w-full overflow-hidden rounded-md border">
+                      <Image
+                        src={imageUrl}
+                        alt="Vista previa de la imagen"
+                        fill
+                        className="object-contain"
+                        onError={(e) => {
+                          // Mostrar un placeholder si la imagen no se puede cargar
+                          e.currentTarget.src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
-
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                />
               </div>
             </CardContent>
           </Card>

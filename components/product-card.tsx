@@ -13,7 +13,7 @@ interface Product {
   name: string
   price: number
   unit: string
-  image: string
+  imageUrl: string
   category: string
 }
 
@@ -28,6 +28,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const handleAddToCart = () => {
     addToCart({
       ...product,
+      imageUrl: product.imageUrl || '/placeholder.svg',
       quantity: 1,
     })
 
@@ -58,7 +59,7 @@ export default function ProductCard({ product }: { product: Product }) {
     <Card className="overflow-hidden transition-all hover:shadow-lg">
       <Link href={`/producto/${product.id}`} className="block relative h-48 w-full overflow-hidden">
         <Image
-          src={product.image || "/placeholder.svg"}
+          src={product.imageUrl || "/placeholder.svg"}
           alt={product.name}
           fill
           className="object-cover transition-transform duration-300 hover:scale-105"

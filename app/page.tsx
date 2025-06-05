@@ -30,6 +30,7 @@ const categories: Category[] = [
   { id: 'verduras', name: 'Verduras', image: '/categories/verduras.jpg', label: 'Verduras', value: 'verduras' },
   { id: 'raices', name: 'Raíces y Tubérculos', image: '/categories/raices.jpg', label: 'Raíces', value: 'raices' },
   { id: 'hierbas', name: 'Hierbas Aromáticas', image: '/categories/hierbas.jpg', label: 'Hierbas', value: 'hierbas' },
+  { id: 'varios', name: 'Productos Varios', image: '/categories/varios.jpg', label: 'Productos Varios', value: 'varios' },
 ]
 
 // Rangos de precios para filtros
@@ -249,12 +250,11 @@ function HomeContent() {
             {/* Categorías */}
             <div className="mb-8">
               <h2 className="text-lg font-semibold mb-4">Categorías</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 lg:gap-6">
                 {categories.map((category) => (
                   <CategoryCard
                     key={category.id}
                     title={category.name}
-                    image={category.image}
                     color="bg-green-600"
                     onClick={() => {
                       if (selectedCategories.includes(category.id)) {
@@ -292,7 +292,7 @@ function HomeContent() {
                       key={`${product.id}-${product.updatedAt}`} 
                       product={{
                         ...product,
-                        image: product.image || '/placeholder.svg'
+                        imageUrl: product.imageUrl || '/placeholder.svg'
                       }} 
                     />
                   ))}

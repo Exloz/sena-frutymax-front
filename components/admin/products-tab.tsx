@@ -71,7 +71,8 @@ export default function ProductsTab() {
           hasMore: apiPagination?.current_page < apiPagination?.last_page
         }))
       }
-    } catch (error: any) {
+    } catch (_error) {
+      console.error("Error al cargar productos:", _error)
       toast({
         title: "Error",
         description: "No se pudieron cargar los productos",
@@ -114,16 +115,17 @@ export default function ProductsTab() {
     try {
       await productService.deleteProduct(productToDelete.id)
       toast({
-        title: "Éxito",
-        description: "Producto eliminado correctamente",
+        title: "Producto eliminado",
+        description: "El producto ha sido eliminado correctamente.",
       })
       loadProducts()
       setDeleteDialogOpen(false)
       setProductToDelete(null)
-    } catch (error: any) {
+    } catch (error) {
+      console.error("Error al eliminar el producto:", error)
       toast({
         title: "Error",
-        description: error.message || "No se pudo eliminar el producto",
+        description: "Ocurrió un error al eliminar el producto. Por favor, inténtalo de nuevo.",
         variant: "destructive",
       })
     } finally {
@@ -140,16 +142,18 @@ export default function ProductsTab() {
   }
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    const variants: Record<string, "default" | "secondary" | "destructive" | "outline" | "warning"> = {
       active: "default",
       inactive: "secondary",
       out_of_stock: "destructive",
+      low_stock: "warning",
     }
 
     const labels: Record<string, string> = {
       active: "Activo",
       inactive: "Inactivo",
       out_of_stock: "Agotado",
+      low_stock: "Stock bajo",
     }
 
     return <Badge variant={variants[status] || "outline"}>{labels[status] || status}</Badge>
@@ -195,6 +199,7 @@ export default function ProductsTab() {
                 <SelectItem value="verduras">Verduras</SelectItem>
                 <SelectItem value="pulpas">Pulpas</SelectItem>
                 <SelectItem value="hierbas">Hierbas y aromáticas</SelectItem>
+                <SelectItem value="varios">Productos Varios</SelectItem>
               </SelectContent>
             </Select>
 
@@ -207,6 +212,7 @@ export default function ProductsTab() {
                 <SelectItem value="active">Activo</SelectItem>
                 <SelectItem value="inactive">Inactivo</SelectItem>
                 <SelectItem value="out_of_stock">Agotado</SelectItem>
+                <SelectItem value="low_stock">Stock bajo</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -236,6 +242,7 @@ export default function ProductsTab() {
                     <TableHead>Categoría</TableHead>
                     <TableHead>Precio</TableHead>
                     <TableHead>Stock</TableHead>
+                    <TableHead>Proveedor</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
@@ -244,12 +251,15 @@ export default function ProductsTab() {
                   {products.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell>
-                        <div className="relative h-12 w-12 rounded-md overflow-hidden">
+                        <div className="relative h-12 w-12">
                           <Image
-                            src={product.image || "/placeholder.svg"}
+                            src={product.imageUrl || "/placeholder.svg"}
                             alt={product.name}
                             fill
-                            className="object-cover"
+                            className="rounded-md object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder.svg';
+                            }}
                           />
                         </div>
                       </TableCell>
@@ -262,7 +272,9 @@ export default function ProductsTab() {
                       <TableCell className="capitalize">{product.category}</TableCell>
                       <TableCell>{formatPrice(product.price)}</TableCell>
                       <TableCell>
-                        <span className={product.stock <= 10 ? "text-red-600 font-medium" : ""}>{product.stock}</span>
+                        <span className={product.stock <= 10 ? "text-red-600 font-medium" : ""}>
+                          {product.stock}
+                        </span>
                       </TableCell>
                       <TableCell>{product.supplier?.name || "N/A"}</TableCell>
                       <TableCell>{getStatusBadge(product.status)}</TableCell>

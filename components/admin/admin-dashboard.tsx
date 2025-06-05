@@ -74,16 +74,6 @@ export default function AdminDashboard() {
           >
             Proveedores
           </Button>
-          <Button
-            variant={activeTab === "orders" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setActiveTab("orders")}
-          >
-            Pedidos
-          </Button>
-          <Button variant={activeTab === "users" ? "default" : "ghost"} size="sm" onClick={() => setActiveTab("users")}>
-            Usuarios
-          </Button>
         </div>
 
         {/* Contenido según la pestaña activa */}
