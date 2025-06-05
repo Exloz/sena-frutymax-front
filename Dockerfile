@@ -28,7 +28,7 @@ COPY . .
 
 # Produce el bundle *stand-alone* (desde Next 13.2 —si tu versión lo soporta—)
 # Tendrás una carpeta .next/standalone con todo lo necesario para correr.
-RUN npm run build \
+RUN npm run build --legacy-peer-deps --force \
  && npm prune --omit=dev        # quita dev-deps sobrantes dentro del builder
 
 ###########################
