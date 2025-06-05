@@ -65,7 +65,7 @@ export default function ProductCard({ product }: { product: Product }) {
           className="object-cover transition-transform duration-300 hover:scale-105"
         />
         <Badge className="absolute top-2 right-2 bg-amber-500">
-          {product.category === "frutas" ? "Fruta" : "Verdura"}
+          {product.category}
         </Badge>
       </Link>
       <CardContent className="p-4">

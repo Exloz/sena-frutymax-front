@@ -88,7 +88,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
             <div className="sticky top-20">
               <div className="relative aspect-square overflow-hidden rounded-lg border bg-white">
                 <Badge className="absolute top-3 left-3 z-10 bg-amber-500">
-                  {productWithDefaults.category === "frutas" ? "Fruta" : "Verdura"}
+                  {productWithDefaults.category}
                 </Badge>
                 <Image
                   src={productWithDefaults.imageUrl}

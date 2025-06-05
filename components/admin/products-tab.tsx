@@ -195,11 +195,11 @@ export default function ProductsTab() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas las categorías</SelectItem>
-                <SelectItem value="frutas">Frutas</SelectItem>
-                <SelectItem value="verduras">Verduras</SelectItem>
-                <SelectItem value="pulpas">Pulpas</SelectItem>
-                <SelectItem value="hierbas">Hierbas y aromáticas</SelectItem>
-                <SelectItem value="varios">Productos Varios</SelectItem>
+                <SelectItem value="Frutas">Frutas</SelectItem>
+                <SelectItem value="Verduras">Verduras</SelectItem>
+                <SelectItem value="Pulpas">Pulpas</SelectItem>
+                <SelectItem value="Hierbas y aromáticas">Hierbas y aromáticas</SelectItem>
+                <SelectItem value="Productos Varios">Productos Varios</SelectItem>
               </SelectContent>
             </Select>
 

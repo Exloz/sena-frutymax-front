@@ -19,7 +19,7 @@ export default function RelatedProducts({ products }: { products: Product[] }) {
         <Link key={product.id} href={`/producto/${product.id}`} className="group">
           <div className="relative aspect-square overflow-hidden rounded-lg border bg-white">
             <Badge className="absolute top-2 right-2 z-10 bg-amber-500">
-              {product.category === "frutas" ? "Fruta" : "Verdura"}
+              {product.category}
             </Badge>
             <Image
               src={product.imageUrl || "/placeholder.svg"}

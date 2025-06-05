@@ -187,10 +187,11 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                     <SelectValue placeholder="Seleccionar categoría" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="frutas">Frutas</SelectItem>
-                    <SelectItem value="verduras">Verduras</SelectItem>
-                    <SelectItem value="pulpas">Pulpas</SelectItem>
-                    <SelectItem value="hierbas">Hierbas y aromáticas</SelectItem>
+                    <SelectItem value="Frutas">Frutas</SelectItem>
+                    <SelectItem value="Verduras">Verduras</SelectItem>
+                    <SelectItem value="Pulpas">Pulpas</SelectItem>
+                    <SelectItem value="Hierbas y aromáticas">Hierbas y aromáticas</SelectItem>
+                    <SelectItem value="Productos varios">Productos varios</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.category && <p className="text-sm text-red-500">{errors.category.message}</p>}

@@ -26,11 +26,11 @@ type Category = {
 
 // Categorías disponibles
 const categories: Category[] = [
-  { id: 'frutas', name: 'Frutas', image: '/categories/frutas.jpg', label: 'Frutas', value: 'frutas' },
-  { id: 'verduras', name: 'Verduras', image: '/categories/verduras.jpg', label: 'Verduras', value: 'verduras' },
-  { id: 'raices', name: 'Raíces y Tubérculos', image: '/categories/raices.jpg', label: 'Raíces', value: 'raices' },
-  { id: 'hierbas', name: 'Hierbas Aromáticas', image: '/categories/hierbas.jpg', label: 'Hierbas', value: 'hierbas' },
-  { id: 'varios', name: 'Productos Varios', image: '/categories/varios.jpg', label: 'Productos Varios', value: 'varios' },
+  { id: 'frutas', name: 'Frutas', image: '/categories/frutas.jpg', label: 'Frutas', value: 'Frutas' },
+  { id: 'verduras', name: 'Verduras', image: '/categories/verduras.jpg', label: 'Verduras', value: 'Verduras' },
+  { id: 'raices', name: 'Raíces y Tubérculos', image: '/categories/raices.jpg', label: 'Raíces', value: 'Raíces' },
+  { id: 'hierbas', name: 'Hierbas Aromáticas', image: '/categories/hierbas.jpg', label: 'Hierbas', value: 'Hierbas' },
+  { id: 'varios', name: 'Productos Varios', image: '/categories/varios.jpg', label: 'Productos Varios', value: 'Productos Varios' },
 ]
 
 // Rangos de precios para filtros
