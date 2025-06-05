@@ -33,7 +33,6 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<CreateProductDto>({
     defaultValues: product
@@ -55,7 +54,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
   useEffect(() => {
     const loadSuppliers = async () => {
       try {
-        const response = await supplierService.getSuppliers({ status: "active" })
+        const response = await supplierService.getSuppliers({ status: true })
         setSuppliers(response.data)
       } catch (error) {
         toast({

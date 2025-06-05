@@ -7,7 +7,7 @@ export const supplierService = {
     page?: number
     limit?: number
     search?: string
-    status?: string
+    status?: boolean
     city?: string
   }): Promise<PaginatedResponse<Supplier>> {
     const searchParams = new URLSearchParams()
@@ -15,7 +15,7 @@ export const supplierService = {
     if (params?.page) searchParams.append("page", params.page.toString())
     if (params?.limit) searchParams.append("limit", params.limit.toString())
     if (params?.search) searchParams.append("search", params.search)
-    if (params?.status) searchParams.append("status", params.status)
+    if (params?.status) searchParams.append("status", params.status.toString())
     if (params?.city) searchParams.append("city", params.city)
 
     const query = searchParams.toString()
