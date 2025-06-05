@@ -1,31 +1,55 @@
-# Etapa 1: build
+# syntax=docker/dockerfile:1.6
+
+###########################
+# 1. Dependencias de producción
+###########################
+FROM node:24-alpine AS deps
+WORKDIR /app
+
+# Copiamos *solo* los manifest; esto hace que la capa de dependencias
+# se invalide sólo cuando cambie uno de estos archivos
+COPY package.json package-lock.json ./
+
+# Instala MÓDULOS DE PRODUCCIÓN y usa cache persistente fuera
+# de la capa para acelerar futuras builds
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --omit=dev --no-audit --no-fund
+
+###########################
+# 2. Build de la app Next.js
+###########################
 FROM node:24-alpine AS builder
-
 WORKDIR /app
-COPY package*.json package-lock.json ./
-RUN npm install --force
+
+# Traemos node_modules de la etapa anterior
+COPY --from=deps /app/node_modules ./node_modules
+# Copiamos el resto del código fuente
 COPY . .
-RUN npm run build
 
-# Etapa 2: producción
-FROM node:24-alpine
+# Produce el bundle *stand-alone* (desde Next 13.2 —si tu versión lo soporta—)
+# Tendrás una carpeta .next/standalone con todo lo necesario para correr.
+RUN npm run build \
+ && npm prune --omit=dev        # quita dev-deps sobrantes dentro del builder
 
+###########################
+# 3. Imagen de producción ultra-ligera
+###########################
+# Si prefieres seguir en Alpine:
+FROM node:24-alpine AS runtime
+
+# --- ajustes mínimos ---
 WORKDIR /app
-RUN apk add --no-cache libc6-compat
-
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-RUN npm install --omit=dev --force && \
-    npm cache clean --force
-
+ENV NODE_ENV=production
 ENV PORT=3000
+
+# Copiamos sólo lo que necesita la app para arrancar
+COPY --from=builder /app/.next/standalone ./           # ejecutables + node_modules
+COPY --from=builder /app/.next/static ./static         # estáticos
+COPY --from=builder /app/public ./public               # assets públicos
+
+# Creamos usuario no-root
+RUN addgroup -S nodegrp && adduser -S -G nodegrp nodeusr
+USER nodeusr
+
 EXPOSE 3000
-
-# Crear usuario no root
-RUN addgroup --system --gid 1001 nodejs \
-    && adduser --system --uid 1001 nextjs
-
-USER nextjs
-
-CMD ["npm", "start"]
+CMD ["node", "server.js"]        # Next genera server.js en la salida standalone
