@@ -288,7 +288,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                         className="object-contain"
                         onError={(e) => {
                           // Mostrar un placeholder si la imagen no se puede cargar
-                          e.currentTarget.src = '/placeholder.svg';
+                          e.currentTarget.src = 'https://placehold.co/800?text=FrutyMax&font=roboto';
                         }}
                       />
                     </div>

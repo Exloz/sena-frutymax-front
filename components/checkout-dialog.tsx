@@ -100,7 +100,7 @@ export default function CheckoutDialog({ open, onOpenChange }: CheckoutDialogPro
                     {cart.map((item) => (
                       <div key={item.id} className="flex items-center gap-4">
                         <div className="relative h-16 w-16 rounded-md overflow-hidden flex-shrink-0">
-                          <Image src={item.imageUrl || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+                          <Image src={item.imageUrl || "https://placehold.co/800?text=FrutyMax&font=roboto"} alt={item.name} fill className="object-cover" />
                         </div>
                         <div className="flex-1">
                           <h4 className="font-medium">{item.name}</h4>
@@ -209,7 +209,7 @@ export default function CheckoutDialog({ open, onOpenChange }: CheckoutDialogPro
                         <div className="flex items-center gap-3">
                           <div className="relative h-10 w-10 rounded overflow-hidden">
                             <Image
-                              src={item.image || "/placeholder.svg"}
+                              src={item.imageUrl || "https://placehold.co/800?text=FrutyMax&font=roboto"}
                               alt={item.name}
                               fill
                               className="object-cover"

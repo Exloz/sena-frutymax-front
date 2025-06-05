@@ -59,7 +59,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
   // Ensure product has required properties for the UI
   const productWithDefaults = {
     ...product,
-    imageUrl: product.image || "/placeholder.svg",
+    imageUrl: product.imageUrl || "https://placehold.co/800?text=FrutyMax&font=roboto",
   }
 
   const formatPrice = (price: number) => {

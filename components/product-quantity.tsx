@@ -32,7 +32,7 @@ export default function ProductQuantity({ product }: ProductQuantityProps) {
       name: product.name,
       price: product.price,
       unit: product.unit,
-      imageUrl: product.imageUrl || "/placeholder.svg",
+      imageUrl: product.imageUrl || "https://placehold.co/800?text=FrutyMax&font=roboto",
       category: product.category,
       quantity,
     }

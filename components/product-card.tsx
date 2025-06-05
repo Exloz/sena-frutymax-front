@@ -28,7 +28,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const handleAddToCart = () => {
     addToCart({
       ...product,
-      imageUrl: product.imageUrl || '/placeholder.svg',
+      imageUrl: product.imageUrl || 'https://placehold.co/800?text=FrutyMax&font=roboto',
       quantity: 1,
     })
 
@@ -56,19 +56,23 @@ export default function ProductCard({ product }: { product: Product }) {
   }
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg">
-      <Link href={`/producto/${product.id}`} className="block relative h-48 w-full overflow-hidden">
+    <Card className="overflow-hidden transition-all hover:shadow-lg h-full flex flex-col">
+      <Link href={`/producto/${product.id}`} className="block relative h-48 bg-gray-100">
         <Image
-          src={product.imageUrl || "/placeholder.svg"}
+          src={product.imageUrl}
           alt={product.name}
           fill
-          className="object-cover transition-transform duration-300 hover:scale-105"
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          onError={({ currentTarget }) => {
+            currentTarget.src = "https://placehold.co/800?text=FrutyMax&font=roboto"
+          }}
         />
         <Badge className="absolute top-2 right-2 bg-amber-500">
           {product.category}
         </Badge>
       </Link>
-      <CardContent className="p-4">
+      <CardContent className="p-4 flex-1 flex flex-col">
         <Link href={`/producto/${product.id}`} className="block">
           <h3 className="font-semibold text-lg hover:underline">{product.name}</h3>
         </Link>

@@ -22,7 +22,7 @@ export default function RelatedProducts({ products }: { products: Product[] }) {
               {product.category}
             </Badge>
             <Image
-              src={product.imageUrl || "/placeholder.svg"}
+              src={product.imageUrl || "https://placehold.co/800?text=FrutyMax&font=roboto"}
               alt={product.name}
               fill
               className="object-cover transition-transform group-hover:scale-105"

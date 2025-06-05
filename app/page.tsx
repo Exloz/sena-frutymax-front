@@ -292,7 +292,7 @@ function HomeContent() {
                       key={`${product.id}-${product.updatedAt}`} 
                       product={{
                         ...product,
-                        imageUrl: product.imageUrl || '/placeholder.svg'
+                        imageUrl: product.imageUrl || "https://placehold.co/800?text=FrutyMax&font=roboto"
                       }} 
                     />
                   ))}
