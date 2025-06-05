@@ -13,7 +13,7 @@ COPY package.json package-lock.json ./
 # Instala MÓDULOS DE PRODUCCIÓN y usa cache persistente fuera
 # de la capa para acelerar futuras builds
 RUN --mount=type=cache,target=/root/.npm \
-    npm install --force --omit=dev --no-audit --no-fund
+    npm install --legacy-peer-deps --force --omit=dev --no-audit --no-fund
 
 ###########################
 # 2. Build de la app Next.js
