@@ -45,7 +45,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
           unit: product.unit,
           category: product.category,
           stock: product.stock,
-          supplierId: product.supplierId,
+          supplier_id: product.supplier_id,
           origin: product.origin,
           nutritionalInfo: product.nutritionalInfo,
         }
@@ -218,10 +218,10 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
             </div>
 
             <div>
-              <Label htmlFor="supplierId">Proveedor *</Label>
+              <Label htmlFor="supplier_id">Proveedor *</Label>
               <Select
-                onValueChange={(value) => setValue("supplierId", Number.parseInt(value))}
-                defaultValue={product?.supplierId?.toString()}
+                onValueChange={(value) => setValue("supplier_id", Number.parseInt(value))}
+                defaultValue={product?.supplier_id?.toString()}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar proveedor" />
@@ -234,7 +234,7 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                   ))}
                 </SelectContent>
               </Select>
-              {errors.supplierId && <p className="text-sm text-red-500">{errors.supplierId.message}</p>}
+              {errors.supplier_id && <p className="text-sm text-red-500">{errors.supplier_id.message}</p>}
             </div>
 
             <div>

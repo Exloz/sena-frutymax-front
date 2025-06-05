@@ -8,7 +8,7 @@ export const productService = {
     limit?: number
     category?: string
     search?: string
-    supplierId?: number
+    supplier_id?: number
     status?: string
   }): Promise<PaginatedResponse<Product>> {
     const searchParams = new URLSearchParams()
@@ -17,7 +17,7 @@ export const productService = {
     if (params?.limit) searchParams.append("limit", params.limit.toString())
     if (params?.category) searchParams.append("category", params.category)
     if (params?.search) searchParams.append("search", params.search)
-    if (params?.supplierId) searchParams.append("supplierId", params.supplierId.toString())
+    if (params?.supplier_id) searchParams.append("supplier_id", params.supplier_id.toString())
     if (params?.status) searchParams.append("status", params.status)
 
     const query = searchParams.toString()

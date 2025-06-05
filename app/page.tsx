@@ -53,58 +53,84 @@ function HomeContent() {
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([])
   const [sortBy, setSortBy] = useState("relevance")
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    hasMore: true
+  })
 
   // Cargar productos desde la API
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
+  const fetchProducts = async (page = 1, isLoadMore = false) => {
+    try {
+      if (isLoadMore) {
+        setIsLoadingMore(true)
+      } else {
         setIsLoading(true)
-        const response = await productService.getProducts()
-        // Asegurarse de que response.data existe y es un array
-        const productsData = Array.isArray(response?.data) ? response.data : []
-        setProducts(productsData)
-        setFilteredProducts(productsData)
-      } catch (err) {
-        console.error("Error al cargar productos:", err)
-        setError("No se pudieron cargar los productos. Intente de nuevo más tarde.")
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los productos.",
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false)
       }
+      
+      const response = await productService.getProducts({
+        page,
+        limit: pagination.limit,
+        ...(searchTerm && { search: searchTerm }),
+        ...(selectedCategories.length > 0 && { category: selectedCategories.join(',') })
+      })
+      
+      if (response?.success) {
+        const newProducts = Array.isArray(response.data) ? response.data : []
+        
+        if (isLoadMore) {
+          setProducts(prev => [...prev, ...newProducts])
+          setFilteredProducts(prev => [...prev, ...newProducts])
+        } else {
+          setProducts(newProducts)
+          setFilteredProducts(newProducts)
+        }
+        
+        setPagination(prev => ({
+          ...prev,
+          page,
+          total: response.pagination?.total || 0,
+          hasMore: page < (response.pagination?.totalPages || 1)
+        }))
+      }
+    } catch (err) {
+      console.error("Error al cargar productos:", err)
+      setError("No se pudieron cargar los productos. Intente de nuevo más tarde.")
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los productos.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+      setIsLoadingMore(false)
     }
+  }
 
-    fetchProducts()
-  }, [])
+  // Cargar productos iniciales
+  useEffect(() => {
+    fetchProducts(1, false)
+  }, [searchTerm, selectedCategories])
+  
+  // Función para cargar más productos
+  const loadMoreProducts = () => {
+    if (!isLoadingMore && pagination.hasMore) {
+      const nextPage = pagination.page + 1
+      fetchProducts(nextPage, true)
+    }
+  }
 
-  // Aplicar filtros y búsqueda
+  // Aplicar filtros de precios y ordenación (los demás filtros ya se aplican en el servidor)
   useEffect(() => {
     let result = [...products]
-
-    // Aplicar búsqueda
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase()
-      result = result.filter(product => 
-        product.name.toLowerCase().includes(term) ||
-        (product.description && product.description.toLowerCase().includes(term))
-      )
-    }
-
-    // Aplicar filtro de categorías
-    if (selectedCategories.length > 0) {
-      result = result.filter(product => 
-        product.category && selectedCategories.includes(product.category)
-      )
-    }
 
     // Aplicar filtro de precios
     if (selectedPriceRanges.length > 0) {
@@ -133,10 +159,12 @@ function HomeContent() {
     })
 
     setFilteredProducts(result)
-  }, [products, searchTerm, selectedCategories, selectedPriceRanges, sortBy])
+  }, [products, selectedPriceRanges, sortBy])
 
   const handleSearch = (term: string) => {
     setSearchTerm(term)
+    // Resetear a la primera página al buscar
+    setPagination(prev => ({ ...prev, page: 1 }))
   }
 
   // Manejadores de eventos para filtros
@@ -150,6 +178,8 @@ function HomeContent() {
     setSelectedCategories([])
     setSelectedPriceRanges([])
     setSortBy("relevance")
+    // Resetear a la primera página al limpiar filtros
+    setPagination(prev => ({ ...prev, page: 1 }))
   }
 
   if (isLoading) {
@@ -234,55 +264,21 @@ function HomeContent() {
                         setSelectedCategories(prev => [...prev, category.id])
                       }
                     }}
-                  />
-                ))}
               </div>
-            </div>
-
-            {/* Productos */}
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold">
-                  {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
-                </h2>
-                <div className="hidden md:block">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => handleSortChange(e.target.value)}
-                    className="text-sm border rounded-md px-3 py-1.5"
-                  >
-                    {sortOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {filteredProducts.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">No se encontraron productos con los filtros seleccionados.</p>
-                  <Button 
-                    variant="outline" 
-                    className="mt-4"
-                    onClick={resetFilters}
-                  >
-                    Limpiar filtros
-                  </Button>
-                </div>
-              ) : (
+            ) : (
+              <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredProducts && filteredProducts.length > 0 ? (
-                    filteredProducts.map((product) => (
-                      product && product.id ? (
-                        <ProductCard
-                          key={product.id}
-                          product={{
-                            id: product.id,
-                            name: product.name,
-                            price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
-                            unit: product.unit || 'unidad',
+                  {filteredProducts.map((product) => (
+                    <ProductCard key={`${product.id}-${product.updatedAt}`} product={product} />
+                  ))}
+                </div>
+                
+                {pagination.hasMore && (
+                  <div className="mt-8 text-center">
+                    <Button
+                      onClick={loadMoreProducts}
+                      disabled={isLoadingMore}
+                      className="mx-auto"
                             image: product.image || '/placeholder.svg',
                             category: product.category
                           }}

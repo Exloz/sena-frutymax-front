@@ -29,7 +29,7 @@ export interface Product {
   category: string
   stock: number
   status: "active" | "inactive" | "out_of_stock"
-  supplierId: number
+  supplier_id: number
   supplier?: Supplier
   nutritionalInfo?: {
     calories: number
@@ -100,7 +100,7 @@ export interface CreateProductDto {
   unit: string
   category: string
   stock: number
-  supplierId: number
+  supplier_id: number
   nutritionalInfo?: {
     calories: number
     protein: string
