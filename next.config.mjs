@@ -3,6 +3,7 @@
 let userConfig = undefined;
 
 const nextConfig = {
+  output: 'export',
   trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
@@ -12,7 +13,7 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
-    domains: ['exloz.site'], // Solo el dominio
+    domains: ['exloz.site'],
     path: '/_next/image/',
   },
   experimental: {
@@ -20,12 +21,15 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  // Deshabilitar la optimización de imágenes ya que no funciona con exportación estática
+  // Las imágenes se servirán directamente desde el directorio público
+  // Asegúrate de que las imágenes estén en la carpeta public
 };
 
 mergeConfig(nextConfig, userConfig);
 
 function mergeConfig(nextConfig, userConfig) {
-  if (!userConfig) return;
+  if (!userConfig) return nextConfig;
 
   for (const key in userConfig) {
     if (
@@ -40,6 +44,8 @@ function mergeConfig(nextConfig, userConfig) {
       nextConfig[key] = userConfig[key];
     }
   }
+  
+  return nextConfig;
 }
 
 export default nextConfig;

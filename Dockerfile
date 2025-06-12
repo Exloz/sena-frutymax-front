@@ -1,31 +1,32 @@
-# Etapa 1: build
+# Etapa 1: Construcción de la aplicación
 FROM node:24-alpine AS builder
 
 WORKDIR /app
-COPY package*.json package-lock.json ./
+
+# Copiar archivos de dependencias
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Instalar dependencias
 RUN npm install --force
+
+# Copiar el resto de los archivos
 COPY . .
+
+# Construir la aplicación
 RUN npm run build
 
-# Etapa 2: producción
-FROM node:24-alpine
+# Etapa 2: Servir archivos estáticos con Nginx
+FROM nginx:stable-alpine
 
-WORKDIR /app
-RUN apk add --no-cache libc6-compat
+# Copiar configuración personalizada de Nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-RUN npm install --omit=dev --force && \
-    npm cache clean --force
+# Copiar los archivos estáticos generados
+COPY --from=builder /app/out/ /usr/share/nginx/html
 
-ENV PORT=3000
-EXPOSE 3000
+# Exponer el puerto 81
+EXPOSE 81
 
-# Crear usuario no root
-RUN addgroup --system --gid 1001 nodejs \
-    && adduser --system --uid 1001 nextjs
-
-USER nextjs
-
-CMD ["npm", "start"]
+# Comando para iniciar Nginx
+CMD ["nginx", "-g", "daemon off;"]

@@ -3,9 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: frutymax-next:latest
+    image: frutymax-next-static:latest
     expose:
-      - "3000"
+      - "81"
     networks:
       - proxy
     labels:
@@ -13,7 +13,7 @@ services:
       - "traefik.http.routers.frutymax.rule=Host(`frutymax.exloz.site`)"
       - "traefik.http.routers.frutymax.entrypoints=websecure"
       - "traefik.http.routers.frutymax.tls.certresolver=le"
-      - "traefik.http.services.frutymax.loadbalancer.server.port=3000"
+      - "traefik.http.services.frutymax.loadbalancer.server.port=81"
       - "traefik.docker.network=proxy"
 
 networks:

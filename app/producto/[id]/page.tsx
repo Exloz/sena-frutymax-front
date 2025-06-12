@@ -10,13 +10,87 @@ import RelatedProducts from "@/components/related-products"
 import { productService } from "@/services/product-service"
 import type { Product } from "@/types/api"
 
+// Esta función le dice a Next.js qué páginas generar estáticamente
+export async function generateStaticParams() {
+  try {
+    console.log('🔍 Obteniendo productos para generación estática...');
+    const API_BASE_URL = "https://api.frutymax.exloz.site/api"
+    
+    // 1. Primero intentamos obtener TODOS los productos activos
+    const response = await fetch(`${API_BASE_URL}/products?status=active&limit=500`);
+    
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data.success || !data.data) {
+      console.error('❌ Respuesta inesperada de la API:', data);
+      throw new Error('Formato de respuesta inesperado');
+    }
+    
+    // 2. Procesar los items de la respuesta
+    const items = Array.isArray(data.data) ? data.data : data.data.items || [];
+    
+    if (items.length === 0) {
+      console.warn('⚠️ No se encontraron productos activos');
+    } else {
+      console.log(`✅ Se encontraron ${items.length} productos activos`);
+    }
+    
+    // 3. Extraer IDs únicos
+    const productIds = new Set<string>();
+    
+    // 4. Asegurarnos de que los IDs sean válidos
+    items.forEach((product: any) => {
+      const id = product?.id?.toString();
+      if (id && !isNaN(Number(id))) {
+        productIds.add(id);
+      }
+    });
+    
+    // 5. Asegurarnos de que los IDs importantes estén incluidos
+    const REQUIRED_IDS = ['1', '4']; // IDs que deben estar siempre presentes
+    REQUIRED_IDS.forEach(id => productIds.add(id));
+    
+    console.log(`📦 Generando ${productIds.size} páginas de productos (incluyendo IDs requeridos)`);
+    
+    // 6. Convertir a array de objetos { id: string }
+    const params = Array.from(productIds).map(id => ({ id }));
+    
+    // 7. Log de los primeros 5 IDs para depuración
+    console.log('📋 Primeros IDs:', params.slice(0, 5).map(p => p.id).join(', '), 
+                params.length > 5 ? `... (${params.length - 5} más)` : '');
+    
+    return params;
+  } catch (error) {
+    console.error('Error generando rutas estáticas para productos:', error)
+    return [{ id: '1' }]
+  }
+}
+
+// Esto indica a Next.js que solo genere las páginas definidas en generateStaticParams
+export const dynamicParams = false
+
 async function getProduct(id: number): Promise<Product> {
   try {
-    const response = await productService.getProduct(id)
-    if (!response.success || !response.data) {
+    const API_BASE_URL = "https://api.frutymax.exloz.site/api"
+    const response = await fetch(`${API_BASE_URL}/products/${id}`)
+    
+    if (!response.ok) {
+      console.error('Error al obtener el producto:', response.statusText)
       notFound()
     }
-    return response.data
+    
+    const data = await response.json()
+    
+    if (!data.success || !data.data) {
+      console.error('Respuesta inesperada de la API:', data)
+      notFound()
+    }
+    
+    return data.data
   } catch (error) {
     console.error('Error fetching product:', error)
     notFound()
