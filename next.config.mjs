@@ -7,33 +7,16 @@ const nextConfig = {
   output: 'export',
   trailingSlash: true,
   
-  // Configuración para manejar rutas dinámicas
-  async exportPathMap() {
-    const paths = {
-      '/': { page: '/' },
-    };
-    
-    try {
-      // Obtener productos para generar rutas estáticas
-      const API_BASE_URL = "https://api.frutymax.exloz.site/api";
-      const response = await fetch(`${API_BASE_URL}/products?status=active&limit=500`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        const items = Array.isArray(data.data) ? data.data : data.data?.items || [];
-        
-        // Agregar rutas de productos
-        items.forEach((product) => {
-          if (product?.id) {
-            paths[`/producto/${product.id}/`] = { page: '/producto/[id]', query: { id: product.id.toString() } };
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Error generando rutas estáticas:', error);
-    }
-    
-    return paths;
+  // Configuración experimental
+  experimental: {
+    // Habilita la generación estática incremental
+    isr: true,
+    // Habilita la generación de mapas de fuente en producción
+    serverComponentsExternalPackages: ['sharp', 'onnxruntime-node'],
+    // Configuraciones adicionales de Webpack
+    webpackBuildWorker: true,
+    parallelServerBuildTraces: true,
+    parallelServerCompiles: true
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -43,13 +26,8 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
-    domains: ['exloz.site'],
+    domains: ['exloz.site', 'api.frutymax.exloz.site'],
     path: '/_next/image/',
-  },
-  experimental: {
-    webpackBuildWorker: true,
-    parallelServerBuildTraces: true,
-    parallelServerCompiles: true,
   },
   // Deshabilitar la optimización de imágenes ya que no funciona con exportación estática
   // Las imágenes se servirán directamente desde el directorio público
