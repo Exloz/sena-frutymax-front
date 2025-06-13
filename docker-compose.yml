@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   frutymax:
     build:
@@ -5,15 +7,19 @@ services:
       dockerfile: Dockerfile
     container_name: frutymax-app
     restart: unless-stopped
-    ports:
-      - "81:81"
-    volumes:
-      - ./out:/usr/share/nginx/html
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    expose:
+      - "81"
     networks:
-      - frutymax-network
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frutymax.rule=Host(`frutymax.exloz.site`)"
+      - "traefik.http.routers.frutymax.entrypoints=websecure"
+      - "traefik.http.routers.frutymax.tls.certresolver=le"
+      - "traefik.http.services.frutymax.loadbalancer.server.port=81"
+      - "traefik.docker.network=proxy"
 
 networks:
-  frutymax-network:
-    driver: bridge
+  proxy:
+    external: true
 

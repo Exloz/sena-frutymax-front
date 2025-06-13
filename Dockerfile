@@ -21,11 +21,18 @@ FROM nginx:stable-alpine
 # Copiar configuración personalizada de Nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Crear directorio para archivos estáticos
+RUN mkdir -p /usr/share/nginx/html
+
 # Copiar los archivos estáticos generados
 COPY --from=builder /app/out/ /usr/share/nginx/html
 
-# Exponer el puerto 81
-EXPOSE 81
+# Configurar permisos
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chmod -R 755 /usr/share/nginx/html
+
+# Exponer el puerto 80
+EXPOSE 80
 
 # Comando para iniciar Nginx
 CMD ["nginx", "-g", "daemon off;"]

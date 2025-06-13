@@ -3,8 +3,38 @@
 let userConfig = undefined;
 
 const nextConfig = {
+  // Configuración para exportación estática
   output: 'export',
   trailingSlash: true,
+  
+  // Configuración para manejar rutas dinámicas
+  async exportPathMap() {
+    const paths = {
+      '/': { page: '/' },
+    };
+    
+    try {
+      // Obtener productos para generar rutas estáticas
+      const API_BASE_URL = "https://api.frutymax.exloz.site/api";
+      const response = await fetch(`${API_BASE_URL}/products?status=active&limit=500`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const items = Array.isArray(data.data) ? data.data : data.data?.items || [];
+        
+        // Agregar rutas de productos
+        items.forEach((product) => {
+          if (product?.id) {
+            paths[`/producto/${product.id}/`] = { page: '/producto/[id]', query: { id: product.id.toString() } };
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error generando rutas estáticas:', error);
+    }
+    
+    return paths;
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
