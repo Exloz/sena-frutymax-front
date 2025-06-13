@@ -15,27 +15,31 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
-    // Incremental Static Regeneration (ISR)
-    isrMemoryCacheSize: 0,
     // Mejorar el rendimiento de la generación estática
-    optimizeCss: true,
     optimizePackageImports: ['lucide-react']
   },
   
   // Configuración de paquetes externos para server components
   serverExternalPackages: ['sharp', 'onnxruntime-node'],
   
-  // Configuración de redirecciones
-  async redirects() {
-    return [
-      // Redirigir /producto/:id a /producto/:id/
-      {
-        source: '/producto/:id',
-        destination: '/producto/:id/',
-        permanent: true,
-      },
-    ];
+  // Configuración de imágenes
+  // Configuración de redirecciones (manejadas en Nginx)
+  skipTrailingSlashRedirect: true,
+  
+  // Manejo de errores 404
+  generateBuildId: async () => 'build',
+  
+  // Configuración de webpack
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Deshabilitar la optimización de CSS crítica en el cliente
+      config.optimization.minimizer = config.optimization.minimizer.filter(
+        (plugin) => plugin.constructor.name !== 'CssMinimizerPlugin'
+      );
+    }
+    return config;
   },
+  
   eslint: {
     ignoreDuringBuilds: true,
   },
