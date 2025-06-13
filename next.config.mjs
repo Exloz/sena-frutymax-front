@@ -3,20 +3,27 @@
 let userConfig = undefined;
 
 const nextConfig = {
-  // Configuración para exportación estática
+  // Habilitar la generación estática
   output: 'export',
+  
+  // Asegurar que las rutas terminen con /
   trailingSlash: true,
   
   // Configuración experimental
   experimental: {
-    // Habilita la generación estática incremental
-    isr: true,
-    // Habilita la generación de mapas de fuente en producción
-    serverComponentsExternalPackages: ['sharp', 'onnxruntime-node'],
     // Configuraciones adicionales de Webpack
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true
+  },
+  
+  // Configuración de paquetes externos para server components
+  serverExternalPackages: ['sharp', 'onnxruntime-node'],
+  
+  // Configuración de regeneración estática incremental (ISR)
+  generateStaticParams: async () => {
+    // Esta función se manejará en cada página individualmente
+    return {};
   },
   eslint: {
     ignoreDuringBuilds: true,

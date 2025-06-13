@@ -13,9 +13,8 @@ RUN npm install --force
 # Copiar el resto de los archivos
 COPY . .
 
-# Construir la aplicación y exportar archivos estáticos
-RUN npm run build && \
-    npm run build:static
+# Construir la aplicación (que ahora incluye la exportación)
+RUN npm run build
 
 # Etapa 2: Servir archivos estáticos con Nginx
 FROM nginx:stable-alpine
