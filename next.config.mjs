@@ -14,16 +14,27 @@ const nextConfig = {
     // Configuraciones adicionales de Webpack
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
-    parallelServerCompiles: true
+    parallelServerCompiles: true,
+    // Incremental Static Regeneration (ISR)
+    isrMemoryCacheSize: 0,
+    // Mejorar el rendimiento de la generación estática
+    optimizeCss: true,
+    optimizePackageImports: ['lucide-react']
   },
   
   // Configuración de paquetes externos para server components
   serverExternalPackages: ['sharp', 'onnxruntime-node'],
   
-  // Configuración de regeneración estática incremental (ISR)
-  generateStaticParams: async () => {
-    // Esta función se manejará en cada página individualmente
-    return {};
+  // Configuración de redirecciones
+  async redirects() {
+    return [
+      // Redirigir /producto/:id a /producto/:id/
+      {
+        source: '/producto/:id',
+        destination: '/producto/:id/',
+        permanent: true,
+      },
+    ];
   },
   eslint: {
     ignoreDuringBuilds: true,

@@ -14,59 +14,74 @@ import type { Product } from "@/types/api"
 export async function generateStaticParams() {
   try {
     console.log('🔍 Obteniendo productos para generación estática...');
-    const API_BASE_URL = "https://api.frutymax.exloz.site/api"
+    const API_BASE_URL = "https://api.frutymax.exloz.site/api";
     
-    // 1. Primero intentamos obtener TODOS los productos activos
-    const response = await fetch(`${API_BASE_URL}/products?status=active&limit=500`);
+    // 1. Configurar un tiempo de espera para la petición
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos de timeout
     
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    if (!data.success || !data.data) {
-      console.error('❌ Respuesta inesperada de la API:', data);
-      throw new Error('Formato de respuesta inesperado');
-    }
-    
-    // 2. Procesar los items de la respuesta
-    const items = Array.isArray(data.data) ? data.data : data.data.items || [];
-    
-    if (items.length === 0) {
-      console.warn('⚠️ No se encontraron productos activos');
-    } else {
-      console.log(`✅ Se encontraron ${items.length} productos activos`);
-    }
-    
-    // 3. Extraer IDs únicos
-    const productIds = new Set<string>();
-    
-    // 4. Asegurarnos de que los IDs sean válidos
-    items.forEach((product: any) => {
-      const id = product?.id?.toString();
-      if (id && !isNaN(Number(id))) {
-        productIds.add(id);
+    try {
+      // 2. Intentar obtener los productos activos
+      const response = await fetch(`${API_BASE_URL}/products?status=active&limit=100`, {
+        signal: controller.signal,
+        next: { revalidate: 3600 } // Revalidar cada hora
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        console.warn(`⚠️ Error HTTP al obtener productos: ${response.status}`);
+        return [{ id: '1' }]; // Devolver al menos una ruta para que la construcción no falle
       }
-    });
+      
+      const data = await response.json();
+      
+      if (!data.success || !data.data) {
+        console.warn('⚠️ Formato de respuesta inesperado de la API');
+        return [{ id: '1' }];
+      }
     
-    // 5. Asegurarnos de que los IDs importantes estén incluidos
-    const REQUIRED_IDS = ['1', '4']; // IDs que deben estar siempre presentes
-    REQUIRED_IDS.forEach(id => productIds.add(id));
-    
-    console.log(`📦 Generando ${productIds.size} páginas de productos (incluyendo IDs requeridos)`);
-    
-    // 6. Convertir a array de objetos { id: string }
-    const params = Array.from(productIds).map(id => ({ id }));
-    
-    // 7. Log de los primeros 5 IDs para depuración
-    console.log('📋 Primeros IDs:', params.slice(0, 5).map(p => p.id).join(', '), 
-                params.length > 5 ? `... (${params.length - 5} más)` : '');
-    
-    return params;
+      // 3. Procesar los items de la respuesta
+      const items = Array.isArray(data.data) ? data.data : data.data.items || [];
+      
+      if (items.length === 0) {
+        console.warn('⚠️ No se encontraron productos activos');
+        return [{ id: '1' }];
+      }
+      
+      // 4. Extraer IDs únicos
+      const productIds = new Set<string>();
+      
+      // 5. Asegurarnos de que los IDs sean válidos
+      items.forEach((product: any) => {
+        const id = product?.id?.toString();
+        if (id && !isNaN(Number(id))) {
+          productIds.add(id);
+        }
+      });
+      
+      // 6. Asegurarnos de que los IDs importantes estén incluidos
+      const REQUIRED_IDS = ['1', '4']; // IDs que deben estar siempre presentes
+      REQUIRED_IDS.forEach(id => productIds.add(id));
+      
+      console.log(`📦 Generando ${productIds.size} páginas de productos (incluyendo IDs requeridos)`);
+      
+      // 7. Convertir a array de objetos { id: string }
+      const params = Array.from(productIds).map(id => ({ id }));
+      
+      // 8. Log de los primeros 5 IDs para depuración
+      console.log('📋 Primeros IDs:', params.slice(0, 5).map(p => p.id).join(', '), 
+                  params.length > 5 ? `... (${params.length - 5} más)` : '');
+      
+      return params;
+      
+    } catch (fetchError) {
+      console.error('❌ Error en la petición fetch:', fetchError);
+      return [{ id: '1' }];
+    }
   } catch (error) {
-    console.error('Error generando rutas estáticas para productos:', error)
-    return [{ id: '1' }]
+    console.error('❌ Error inesperado generando rutas estáticas:', error);
+    return [{ id: '1' }];
   }
 }
 
@@ -132,7 +147,8 @@ export default async function ProductPage({ params }: { params: { id: string } }
   
   const productWithDefaults = {
     ...product,
-    imageUrl: product.image || "https://placehold.co/800?text=FrutyMax&font=roboto",
+    // Usar imageUrl si existe, de lo contrario usar image, y si ninguno existe, usar el placeholder
+    imageUrl: (product as any).imageUrl || (product as any).image || "https://placehold.co/800?text=FrutyMax&font=roboto",
   }
 
 
