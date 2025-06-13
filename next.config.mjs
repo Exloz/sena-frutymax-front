@@ -26,6 +26,21 @@ const nextConfig = {
   // Asegúrate de que las imágenes estén en la carpeta public
 };
 
+// Configuración para generación estática
+export const dynamic = 'force-static';
+export const dynamicParams = true;
+// Configuración de revalidación
+export const revalidate = 60; // Revalidar cada 60 segundos
+
+// Configuración para manejar rutas dinámicas
+export const config = {
+  // Esto le dice a Next.js que estas páginas pueden ser generadas estáticamente
+  // pero también pueden ser servidas dinámicamente si es necesario
+  runtime: 'nodejs',
+  regions: ['iad1'],
+  supportsResponseStreaming: true,
+};
+
 mergeConfig(nextConfig, userConfig);
 
 function mergeConfig(nextConfig, userConfig) {
