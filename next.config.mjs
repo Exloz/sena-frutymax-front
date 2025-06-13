@@ -22,9 +22,23 @@ const nextConfig = {
   // Configuración de paquetes externos para server components
   serverExternalPackages: ['sharp', 'onnxruntime-node'],
   
-  // Configuración de imágenes
-  // Configuración de redirecciones (manejadas en Nginx)
-  skipTrailingSlashRedirect: true,
+  // Configuración de redirecciones
+  async redirects() {
+    return [
+      // Redirigir /producto/:id a /producto/:id/
+      {
+        source: '/producto/:id',
+        destination: '/producto/:id/',
+        permanent: true,
+      },
+      // Redirigir /admin a /admin/
+      {
+        source: '/admin',
+        destination: '/admin/',
+        permanent: true,
+      },
+    ];
+  },
   
   // Manejo de errores 404
   generateBuildId: async () => 'build',
